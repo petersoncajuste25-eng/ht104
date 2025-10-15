@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom';
+import { useState, FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +9,34 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 export function Login() {
   const { language, t } = useLanguage();
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      setError(
+        language === 'ht'
+          ? 'Imel oswa modpas pa kòrèk'
+          : language === 'fr'
+          ? 'Email ou mot de passe incorrect'
+          : 'Invalid email or password'
+      );
+      setLoading(false);
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -21,31 +51,22 @@ export function Login() {
             {language === 'en' && 'Sign in to your account'}
           </p>
 
-          <Button variant="outline" className="w-full mb-4" size="lg">
-            <img
-              src="https://www.google.com/favicon.ico"
-              alt="Google"
-              className="w-5 h-5 mr-2"
-            />
-            {t('sign_in_google')}
-          </Button>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              {error}
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">{t('or')}</span>
-            </div>
-          </div>
+          )}
 
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="nom@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="mt-1"
               />
             </div>
@@ -56,6 +77,9 @@ export function Login() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="mt-1"
               />
             </div>
@@ -80,10 +104,18 @@ export function Login() {
 
             <Button
               type="submit"
+              disabled={loading}
               className="w-full bg-[#1e40af] hover:bg-[#1e40af]/90"
               size="lg"
             >
-              {t('login_title')}
+              {loading ? (
+                <span className="flex items-center">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  {language === 'ht' ? 'Chajman...' : language === 'fr' ? 'Chargement...' : 'Loading...'}
+                </span>
+              ) : (
+                t('login_title')
+              )}
             </Button>
           </form>
 

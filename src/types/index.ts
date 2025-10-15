@@ -50,6 +50,9 @@ export interface Order {
   id: string;
   user_id: string;
   order_number: string;
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
   delivery_method: 'pickup' | 'delivery';
   delivery_address?: {
     street: string;
@@ -60,7 +63,27 @@ export interface Order {
   subtotal: number;
   delivery_fee: number;
   total: number;
-  status: string;
+  payment_status: 'pending_50' | 'paid_50' | 'fully_paid';
+  order_status: 'pending' | 'confirmed' | 'ready' | 'delivered';
+  special_instructions?: string;
+  admin_notes?: string;
+  first_payment_date?: string;
+  final_payment_date?: string;
+  confirmed_at?: string;
+  ready_at?: string;
+  delivered_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserProfile {
+  id: string;
+  full_name: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  department?: string;
+  role: 'customer' | 'admin';
   created_at: string;
   updated_at: string;
 }

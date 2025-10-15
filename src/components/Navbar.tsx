@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, LogOut, LayoutDashboard, Settings } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCartStore } from '@/stores/cartStore';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -8,11 +9,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
+  const { user, profile, signOut, isAdmin } = useAuth();
   const totalItems = useCartStore((state) => state.getTotalItems());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -72,17 +75,51 @@ export function Navbar() {
             </Link>
 
             <div className="hidden md:flex items-center space-x-2">
-              <Link to="/login">
-                <Button variant="ghost" size="sm">
-                  <User className="w-4 h-4 mr-2" />
-                  {t('nav_login')}
-                </Button>
-              </Link>
-              <Link to="/signup">
-                <Button size="sm" className="bg-[#1e40af] hover:bg-[#1e40af]/90">
-                  {t('nav_signup')}
-                </Button>
-              </Link>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <User className="w-4 h-4 mr-2" />
+                      {profile?.full_name || user.email}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <Link to="/dashboard">
+                      <DropdownMenuItem>
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </DropdownMenuItem>
+                    </Link>
+                    {isAdmin && (
+                      <Link to="/admin">
+                        <DropdownMenuItem>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Admin
+                        </DropdownMenuItem>
+                      </Link>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      {language === 'ht' ? 'Dekonekte' : language === 'fr' ? 'Déconnexion' : 'Logout'}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="ghost" size="sm">
+                      <User className="w-4 h-4 mr-2" />
+                      {t('nav_login')}
+                    </Button>
+                  </Link>
+                  <Link to="/signup">
+                    <Button size="sm" className="bg-[#1e40af] hover:bg-[#1e40af]/90">
+                      {t('nav_signup')}
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             <button
